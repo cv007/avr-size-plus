@@ -3,6 +3,8 @@ Alternative to avr-size for avr0/1 series.
 
 Uses avr-readelf to provide the memory information needed. The executable file will need to be in the same folder as the toolchain provided avr-readelf. The only optional argument is `-d` to see debugging information and all avr-readelf output. The avr-readelf is called twice with first the `-S` option for section info, then `-s` for symbol info. The program was compiled and tested on a Linux pc that is based on Ubuntu 16.04 LTS. No compiler options were used, and the resulting binary is 64bit in my case (and is the executable in this repository).
 
+This utility only deals with the common/typical sections, so if there are additional sections created that do not live in the common sections (.text, .data, etc.) then these secction(s) will not be counted.
+
 Additional info can also be added in the future, such as a function list, object list, sorted by address or size, grouped by section, etc., to give an idea of what functions or objects are taking the most flash and ram.
 
 ### to compile
