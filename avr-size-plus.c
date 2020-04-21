@@ -40,19 +40,25 @@ free                  154 [ 97%]
 
 */
 
+/*
+1.20.0420 changed readelf options to add -W for wide output to get full names
+
+*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <libgen.h>
 
+#define VERSION "1.20.0420" //1.YY.MMDD
+
 /*-----------------------------------------------------------------------------
     readelf options
     avr-readelf will need to be in same folder as this executable file
 -----------------------------------------------------------------------------*/
 #define READELF_EXE "./avr-readelf"
-#define READELF_HEADER_OPT "-S"
-#define READELF_SYMBOL_OPT "-s"
+#define READELF_HEADER_OPT "-SW"
+#define READELF_SYMBOL_OPT "-sW"
 
 /*-----------------------------------------------------------------------------
     vars
@@ -93,7 +99,7 @@ region_t regions[] = {
     {"__TEXT_REGION_LENGTH__",0},
     {"__DATA_REGION_LENGTH__",0},
     {"__EEPROM_REGION_LENGTH__",0},
-    {"__USER_SIGNATURE_REGION_L",0},
+    {"__USER_SIGNATURE_REGION_LENGTH__",0},
     {0,0}
 };
 #define TEXT_REGION 0
@@ -120,10 +126,10 @@ FILE* fd2FILE(int fd, const char* mode){
     return f;
 }
 void help(char* argv[]){
-    printf( "usage:\r\n"
+    printf( "usage:               [v%s]\r\n"
             "  %s [-d] /full/path/to/myapp.elf\r\n"
             "  -d = optional debug output\r\n",
-            basename( argv[0] ) );
+            VERSION, basename( argv[0] ) );
     exit(1);
 }
 
@@ -258,16 +264,20 @@ int main(int argc, char* argv[]){
     //so can run ./avr-readelf, which is in this dir
     chdir( dirname(argv[0]) );
 
+    //headers
     char* args[] = { READELF_EXE, READELF_HEADER_OPT, elfname, NULL };
     int child_stdout = readelf( args );
     char buf[256];
     FILE *f = fd2FILE( child_stdout, "r" );
 
-    while( 0 != fgets( buf, 128, f ) ){
+    while( 0 !=fgets( buf, 128, f ) ){
         if( debug ) printf( "%s", buf );
         find_section( buf );
     }
 
+    //symbols
+    int rd_total = 0;
+    int rd_size;
     args[1] = READELF_SYMBOL_OPT;
     child_stdout = readelf( args );
     f = fd2FILE( child_stdout, "r" );
